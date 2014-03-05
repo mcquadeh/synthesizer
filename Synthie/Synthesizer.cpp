@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "Synthesizer.h"
 #include "ToneInstrument.h"
+#include "Recorded.h"
 #include "xmlhelp.h"
 
 #include <cmath>
@@ -70,6 +71,11 @@ bool CSynthesizer::Generate(double * frame)
         {
             instrument = new CToneInstrument();
         }
+
+		else if(note->Instrument() == L"Recorded")
+		{
+			instrument = new CRecorded();
+		}
 
         // Configure the instrument object
         if(instrument != NULL)
