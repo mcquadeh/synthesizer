@@ -314,7 +314,7 @@ void CSynthesizer::XmlLoadInstrument(IXMLDOMNode * xml)
         CComVariant value;
         attrib->get_nodeValue(&value);
 
-        if(name == "instrument")
+        if(name == L"instrument")
         {
             instrument = value.bstrVal;
         }
@@ -333,6 +333,10 @@ void CSynthesizer::XmlLoadInstrument(IXMLDOMNode * xml)
         {
            XmlLoadNote(node, instrument);
         }
+		else if(name == L"effect" && instrument == L"Recorded")
+		{
+			XmlLoadNote(node, instrument);
+		}
     }
 }
 

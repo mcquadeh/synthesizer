@@ -5,6 +5,7 @@
 CRecorded::CRecorded(void)
 {
 	m_sampleRate = 44100;
+	m_samplePeriod = 1.0 / 44100.0;
 	m_duration = 0;
 	m_beatDuration = 0;
 	m_time = 0;
@@ -17,8 +18,8 @@ bool CRecorded::LoadFile(void)
 		return FALSE;
 
 	m_sampleRate = m_waveFile.SampleRate();
+	m_samplePeriod = 1 / m_sampleRate;
 	m_duration = m_waveFile.GetDuration();
-	m_beatDuration = m_duration * (m_bpmMaster / 60);
    
 	return TRUE;
 }
@@ -55,10 +56,6 @@ void CRecorded::SetNote(CNote *note)
         // and then read its integer or double value from a member variable.
         CComVariant value;
         attrib->get_nodeValue(&value);
-
-        if(name == "sample")
-        {
-        }
     }
 }
 
@@ -80,5 +77,9 @@ bool CRecorded::Generate(void)
 	m_frame[0] = double(temp[0]) / 32767.0;
 	m_frame[1] = double(temp[1]) / 32767.0;
 	m_time += GetSamplePeriod();
+	if(m_time > 10)
+	{
+		return FALSE;
+	}
 	return m_time < m_duration;
 }
