@@ -1,5 +1,6 @@
 #include "StdAfx.h"
 #include "Recorded.h"
+#include "xmlhelp.h"
 
 
 CRecorded::CRecorded(void)
@@ -18,7 +19,7 @@ bool CRecorded::LoadFile(void)
 		return FALSE;
 
 	m_sampleRate = m_waveFile.SampleRate();
-	m_samplePeriod = 1 / m_sampleRate;
+	m_samplePeriod = 1.0 / m_sampleRate;
 	m_duration = m_waveFile.GetDuration();
    
 	return TRUE;
@@ -31,31 +32,19 @@ CRecorded::~CRecorded(void)
 
 void CRecorded::SetNote(CNote *note)
 {
-	// Get a list of all attribute nodes and the
-    // length of that list
-    CComPtr<IXMLDOMNamedNodeMap> attributes;
-    note->Node()->get_attributes(&attributes);
-    long len;
-    attributes->get_length(&len);
+	CComPtr<IXMLDOMNode> node;
+    note->Node()->get_firstChild(&node);
 
     // Loop over the list of attributes
-    for(int i=0;  i<len;  i++)
+    for( ; node != NULL; NextNode(node))
     {
-        // Get attribute i
-        CComPtr<IXMLDOMNode> attrib;
-        attributes->get_item(i, &attrib);
-
-        // Get the name of the attribute
         CComBSTR name;
-        attrib->get_nodeName(&name);
+		node->get_nodeName(&name);
 
-        // Get the value of the attribute.  A CComVariant is a variable
-        // that can have any type. It loads the attribute value as a
-        // string (UNICODE), but we can then change it to an integer 
-        // (VT_I4) or double (VT_R8) using the ChangeType function 
-        // and then read its integer or double value from a member variable.
-        CComVariant value;
-        attrib->get_nodeValue(&value);
+		if(name == L"effect")
+		{
+			XmlLoadEffect(node);
+		}
     }
 }
 
@@ -74,12 +63,60 @@ bool CRecorded::Generate(void)
 {
 	short temp[2];
 	ProcessReadFrame(temp);
-	m_frame[0] = double(temp[0]) / 32767.0;
-	m_frame[1] = double(temp[1]) / 32767.0;
+	m_frame[0] = double(temp[0]) / 32768.0;
+	m_frame[1] = double(temp[1]) / 32768.0;
 	m_time += GetSamplePeriod();
-	if(m_time > 10)
+	return m_time < (m_duration - 0.01);
+}
+
+void CRecorded::ProcessEffects(short *p_frame)
+{
+}
+
+void CRecorded::XmlLoadEffect(IXMLDOMNode *xml)
+{
+	// Get a list of all attribute nodes and the
+    // length of that list
+    CComPtr<IXMLDOMNamedNodeMap> attributes;
+    xml->get_attributes(&attributes);
+    long len;
+    attributes->get_length(&len);
+
+	RecordedEffect temp;
+
+	for(int i = 0; i < len; i++)
 	{
-		return FALSE;
+		// Get attribute i
+		CComPtr<IXMLDOMNode> attrib;
+		attributes->get_item(i, &attrib);
+
+		// Get the name of the attribute
+		CComBSTR attName;
+		attrib->get_nodeName(&attName);
+
+		// Get the value of the attribute.  A CComVariant is a variable
+		// that can have any type. It loads the attribute value as a
+		// string (UNICODE), but we can then change it to an integer 
+		// (VT_I4) or double (VT_R8) using the ChangeType function 
+		// and then read its integer or double value from a member variable.
+		CComVariant value;
+		attrib->get_nodeValue(&value);
+
+		if(attName == L"effect")
+		{
+			temp.eName = value.bstrVal;
+		}
+		else if(attName == L"measure")
+		{
+			value.ChangeType(VT_I4);
+			temp.measure = value.intVal - 1;
+		}
+		else if(attName == L"beat")
+		{
+			value.ChangeType(VT_I4);
+			temp.beat = value.intVal - 1;
+		}
 	}
-	return m_time < m_duration;
+
+	m_effects.push_back(temp);
 }

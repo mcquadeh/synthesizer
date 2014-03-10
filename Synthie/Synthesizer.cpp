@@ -122,6 +122,8 @@ bool CSynthesizer::Generate(double * frame)
         CInstrument *instrument = *node;
 
 		instrument->SetBpm(m_bpm);
+		instrument->SetBeat(m_beat);
+		instrument->SetMeasure(m_measure);
 
         // Call the generate function
         if(instrument->Generate())
@@ -333,10 +335,6 @@ void CSynthesizer::XmlLoadInstrument(IXMLDOMNode * xml)
         {
            XmlLoadNote(node, instrument);
         }
-		else if(name == L"effect" && instrument == L"Recorded")
-		{
-			XmlLoadNote(node, instrument);
-		}
     }
 }
 

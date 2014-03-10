@@ -19,8 +19,11 @@
           <note measure="7" beat="1" duration="3" note="Bb4"/>
      </instrument>
 	 <instrument instrument="Recorded">
-		<note measure="1" beat="1"/>
-		<effect/>
+		<note measure="1" beat="1">
+			<effect effect="none" measure="4" beat="3"/>
+			<effect effect="fuzz" measure="5" beat="2"/>
+			<effect effect="both" measure="8" beat="0.25"/>
+		</note>
 	 </instrument>
 </score>
 

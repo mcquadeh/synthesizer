@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+#include <algorithm>
 #include "Instrument.h"
 #include "audio/wave.h"
 #include "audio/DirSoundStream.h"
@@ -8,15 +10,45 @@ class CRecorded :
 	public CInstrument
 {
 public:
+
+	enum EffectName {NONE, ONE, TWO, BOTH};
+
+	struct RecordedEffect {
+
+		bool operator<(const RecordedEffect &b)
+		{
+			if(measure < b.measure)
+			{
+				return TRUE;
+			}
+			if(b.measure > measure)
+			{
+				return FALSE;
+			}
+			if(measure == b.measure && beat < b.beat)
+			{
+				return TRUE;
+			}
+			return FALSE;
+		}
+		int measure;
+		double beat;
+		wstring eName; 
+	} ;
+
 	CRecorded(void);
 	virtual ~CRecorded(void);
 
 	virtual void SetNote(CNote *note);
+	//void SetEffects(CNote
 
 	virtual void Start();
 	virtual bool Generate();
 
 	void ProcessReadFrame(short *p_frame);
+	void ProcessEffects(short *p_frame);
+
+	void XmlLoadEffect(IXMLDOMNode *xml);
 
 	bool LoadFile();
 
@@ -26,5 +58,7 @@ private:
 	double m_duration; //Length of the sample
 	double m_beatDuration; //Length of sample in beats
 	double m_time; //Current time
+
+	std::vector<RecordedEffect> m_effects;
 };
 
