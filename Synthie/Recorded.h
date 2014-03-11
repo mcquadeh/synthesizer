@@ -59,6 +59,10 @@ private:
 	double m_beatDuration; //Length of sample in beats
 	double m_time; //Current time
 
+	int m_currentEffect;
+	bool m_fuzz; //These two booleans determine which effect is to be applied
+	bool m_dynamic;
+
 	std::vector<RecordedEffect> m_effects;
 };
 

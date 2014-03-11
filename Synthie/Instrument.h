@@ -14,7 +14,7 @@ public:
 	void SetMeasure(int measure) {m_curMeasure = measure;}
 	void SetBeat(double beat) {m_curBeat = beat;}
 
-private:
+protected:
 	int m_curMeasure;
 	double m_curBeat;
 };

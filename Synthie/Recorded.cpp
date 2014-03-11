@@ -56,6 +56,7 @@ void CRecorded::ProcessReadFrame(short *p_frame)
 void CRecorded::Start(void)
 {
 	m_time = 0;
+	m_currentEffect = 0;
 	m_waveFile.Rewind();
 }
 
@@ -63,6 +64,50 @@ bool CRecorded::Generate(void)
 {
 	short temp[2];
 	ProcessReadFrame(temp);
+
+
+	while(m_currentEffect < (int)m_effects.size())
+    {
+        // Get a pointer to the current effect
+        RecordedEffect *effect = &m_effects[m_currentEffect];
+
+        // If the measure is in the future we can't play
+        // this effect just yet.
+        if(effect->measure > m_curMeasure)
+            break;
+        
+        // If this is the current measure, but the
+        // beat has not been reached, we can't play
+        // this effect.
+        if(effect->measure == m_curMeasure && effect->beat > m_curBeat)
+            break;
+
+        // Figure out which effect to apply
+		if(effect->eName == L"both")
+		{
+			m_fuzz = TRUE;
+			m_dynamic = TRUE;
+		}
+		else if(effect->eName == L"dynamic")
+		{
+			m_fuzz = FALSE;
+			m_dynamic = TRUE;
+		}
+		else if(effect->eName == L"fuzz")
+		{
+			m_fuzz = TRUE;
+			m_dynamic = FALSE;
+		}
+		else
+		{
+			m_fuzz = FALSE;
+			m_dynamic = FALSE;
+		}
+		m_currentEffect++;
+    }
+
+	ProcessEffects(temp);
+
 	m_frame[0] = double(temp[0]) / 32768.0;
 	m_frame[1] = double(temp[1]) / 32768.0;
 	m_time += GetSamplePeriod();
@@ -113,8 +158,8 @@ void CRecorded::XmlLoadEffect(IXMLDOMNode *xml)
 		}
 		else if(attName == L"beat")
 		{
-			value.ChangeType(VT_I4);
-			temp.beat = value.intVal - 1;
+			value.ChangeType(VT_R8);
+			temp.beat = value.dblVal - 1;
 		}
 	}
 
